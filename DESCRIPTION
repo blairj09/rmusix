@@ -15,8 +15,11 @@ Imports:
     purrr,
     dplyr,
     tibble,
-    jsonlite
+    jsonlite,
+    readr
 URL: https://github.com/blairj09/rmusix
 BugReports: https://github.com/blairj09/rmusix/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.0.1
+Suggests: 
+    testthat
