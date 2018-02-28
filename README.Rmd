@@ -18,10 +18,9 @@ The goal of rmusix is to provide a simple wrapper for the [musixmatch](https://w
 
 ## Installation
 
-## Example
+You can install `rmusix` from github with:
 
-This is a basic example which shows you how to solve a common problem:
-
-```{r example}
-## basic example code
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("blairj09/rmusix")
 ```

@@ -8,11 +8,9 @@ The goal of rmusix is to provide a simple wrapper for the [musixmatch](https://w
 Installation
 ------------
 
-Example
--------
-
-This is a basic example which shows you how to solve a common problem:
+You can install `rmusix` from github with:
 
 ``` r
-## basic example code
+# install.packages("devtools")
+devtools::install_github("blairj09/rmusix")
 ```
