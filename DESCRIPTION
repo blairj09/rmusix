@@ -1,11 +1,22 @@
 Package: rmusix
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: An R Wrapper for musixmatch API
+Version: 0.0.0.9000
+Authors@R: person("James", "Blair", email = "james.m.blair@icloud.com", 
+    role = c("aut", "cre"))
+Description: A minimal R wrapper for the musixmatch API to provide access to
+    music details and song lyrics.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    httr,
+    magrittr,
+    purrr,
+    dplyr,
+    tibble,
+    jsonlite
+URL: https://github.com/blairj09/rmusix
+BugReports: https://github.com/blairj09/rmusix/issues
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.0.1
