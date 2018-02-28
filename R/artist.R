@@ -25,18 +25,22 @@ search_artists <- function(artist, page = 1, page_size = 10) {
                                 )
   )
 
-  query_resp <- httr::GET(query_url)
-
-  query_cont <- httr::content(query_resp, as = "text", encoding = "UTF-8") %>%
-    jsonlite::fromJSON()
+  query_cont <- get_content(query_url)
 
   artist_tbl <- query_cont %>%
     purrr::pluck("message", "body", "artist_list", "artist") %>%
     dplyr::select(
       artist_id,
-      artist_name
+      artist_mbid,
+      artist_name,
+      artist_country,
+      artist_rating,
+      artist_twitter_url,
+      updated_time
     ) %>%
-    tibble::as_tibble()
+    tibble::as_tibble() %>%
+    # Parse data into proper types
+    purrr::map_df(readr::parse_guess)
 
   artist_tbl
 }
@@ -53,10 +57,15 @@ get_artist <- function(artist_id, artist_mbid = NULL) {
                                   apikey = options("rmusix_api_key")
                                 ))
 
-  query_resp <- httr::GET(query_url)
+  query_cont <- get_content(query_url)
 
-  query_cont <- httr::content(query_resp, type = "text", encoding = "UTF-8") %>%
-    jsonlite::fromJSON()
+  cont_list <- query_cont %>%
+    purrr::pluck("message", "body", "artist")
+
+  artist_tbl <- tibble::tibble(
+    artist_id = readr::parse_integer(cont_list[["artist_id"]]),
+
+  )
 }
 
 # get_related_artists
