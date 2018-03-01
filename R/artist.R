@@ -12,18 +12,21 @@
 #'   to 10.
 #'
 #' @return A tibble containing details about matches to the artist searched for.
+#'
+#' @examples
+#' \dontrun{
+#' # Search for Taylor Swift
+#' search_artists("Taylor Swift")
+#' }
+#'
 #' @export
 search_artists <- function(artist, page = 1, page_size = 10) {
-  query_url <- httr::modify_url(API_URL,
-                                path = "ws/1.1/artist.search",
-                                query = list(
-                                  format = API_FORMAT,
-                                  q_artist = artist,
-                                  page = page,
-                                  page_size = page_size,
-                                  apikey = options("rmusix_api_key")
-                                )
-  )
+  query_url <- build_api_url(path = "artist.search",
+                             query = list(
+                               q_artist = artist,
+                               page = page,
+                               page_size = page_size)
+                             )
 
   query_cont <- get_content(query_url)
 
@@ -45,28 +48,23 @@ search_artists <- function(artist, page = 1, page_size = 10) {
   artist_tbl
 }
 
-#' Get details about a specific artist
-#'
-#' \code{get_artist} returns details about a specific artist.
-get_artist <- function(artist_id, artist_mbid = NULL) {
-  query_url <- httr::modify_url(API_URL,
-                                path = "ws/1.1/artist.get",
-                                query = list(
-                                  artist_id = artist_id,
-                                  artist_mbid = artist_mbid,
-                                  apikey = options("rmusix_api_key")
-                                ))
-
-  query_cont <- get_content(query_url)
-
-  cont_list <- query_cont %>%
-    purrr::pluck("message", "body", "artist")
-
-  artist_tbl <- tibble::tibble(
-    artist_id = readr::parse_integer(cont_list[["artist_id"]]),
-
-  )
-}
+# get_artist <- function(artist_id, artist_mbid = NULL) {
+#   query_url <- build_api_url(path = "artist.get",
+#                              query = list(
+#                                artist_id = artist_id,
+#                                artist_mbid = artist_mbid
+#                              ))
+#
+#   query_cont <- get_content(query_url)
+#
+#   cont_list <- query_cont %>%
+#     purrr::pluck("message", "body", "artist")
+#
+#   artist_tbl <- tibble::tibble(
+#     artist_id = readr::parse_integer(cont_list[["artist_id"]]),
+#
+#   )
+# }
 
 # get_related_artists
 
