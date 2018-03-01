@@ -63,7 +63,10 @@ get_album_tracks <- function(album_id,
       updated_time
     ) %>%
     tibble::as_tibble() %>%
-    purrr::map_df(readr::parse_guess)
+    purrr::map_df(readr::parse_guess) %>%
+    mutate(
+      album_name = as.character(album_name)
+    )
 
   track_tbl
 }

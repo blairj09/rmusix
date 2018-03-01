@@ -9,12 +9,13 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  cache = TRUE
 )
 ```
 # rmusix
 
-The goal of rmusix is to provide a simple wrapper for the [musixmatch](https://www.musixmatch.com) API.
+The goal of rmusix is to provide a simple wrapper for the [musixmatch](https://www.musixmatch.com) API. This API provides meta-data around artists, albums, and songs. It also provides song lyrics via API, **but full lyrics are currently only available under a [paid plan](https://developer.musixmatch.com/plans)**. A free API plan provides access to 30% of the lyrics for any given track. 
 
 ## Installation
 
@@ -24,3 +25,85 @@ You can install `rmusix` from github with:
 # install.packages("devtools")
 devtools::install_github("blairj09/rmusix")
 ```
+
+## Usage
+The following example illustrates a typical use case for `rmusix`. Let's say that we want to look at details for all of Taylor Swift's songs and albums. First, we need to load the packages necessary and set our API key.
+
+```{r analysis-prep, cache=FALSE, message=FALSE}
+library(rmusix)
+library(tidyverse)
+
+# Set API Key
+set_api_key(keyring::key_get("musixmatch"))
+```
+
+Now we need to find the `artist_id` for Taylor, which can be done using `search_artists()`.
+
+```{r find-taylor}
+ts_search <- search_artists("Taylor Swift")
+ts_search
+```
+
+There she is in row 1. Now, we can use the `artist_id` to find all of her albums using `get_artist_albums()`.
+
+```{r taylor-albums}
+ts_id <- ts_search[["artist_id"]][[1]]
+
+ts_albums <- get_artist_albums(ts_id, page_size = 100)
+head(ts_albums)
+```
+
+We can see from the output of `get_artist_albums()` that we have singles mixed in with full album releases. While these can be identified using the `album_release_type` column, I've noticed that column sometimes stil allows Singles to slip in as full albums. Instead, we'll filter to full albums by filtering on `album_track_count`.
+
+```{r filter-albums}
+ts_full_albums <- ts_albums %>% 
+  filter(album_track_count >= 5)
+
+ts_full_albums
+```
+
+We still have a lot of duplicates in `ts_full_albums`, and a bunch of Karaoke albums as well. We can use `album_rating` to further filter down to albums we're interested in.
+
+```{r filter-albums-2}
+ts_full_albums <- ts_full_albums %>% 
+  filter(
+    album_rating == 100,
+    !str_detect(album_name, "Karaoke|Platinum"))
+
+ts_full_albums
+```
+
+Now `ts_full_albums` contains all of Taylor's studio albums. Now, let's get the tracks from each of these albums using `get_album_tracks()`.
+```{r get-tracks}
+ts_tracks <- map_df(ts_full_albums[["album_id"]],
+                    get_album_tracks,
+                    page_size = max(ts_full_albums[["album_track_count"]]))
+
+ts_tracks
+```
+
+The final step is to add lyrics to all the tracks we now have using `get_track_lyrics()`.
+
+```{r add-lyrics, message=FALSE}
+ts_tracks <- ts_tracks %>% 
+  mutate(lyrics = map_chr(track_id,
+                          ~get_track_lyrics(.)[["lyrics_body"]]))
+
+str(ts_tracks)
+```
+
+Now, remember, since we're only using the free tier of the API, we only get 30% of the lyrics for each track. However, we also have a lot of other great metadata around each track that we can use as well. For example, we can look at the distribution of song lengths by album (for some reason the version of Red that we're pulling doesn't have data for `track_length`).
+
+```{r taylor-charts}
+ts_tracks %>% 
+  filter(album_name != "Red") %>% 
+  ggplot(aes(x = fct_reorder(album_name, first_release_date), y = track_length, fill = album_name)) +
+  geom_violin(show.legend = FALSE) +
+  scale_y_continuous(labels = function(x) paste0(x, " s")) +
+  nord::scale_fill_nord("lumina") +
+  theme_bw() +
+  labs(x = "Album",
+       y = "Song Length (s)",
+       title = "Taylor Swift Song Lengths")
+```
+
